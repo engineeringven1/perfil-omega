@@ -71,7 +71,7 @@ def calcular_dimensiones_tnx(puntos):
     return height, width, width, perimeter
 
 
-def calcular_propiedades(A_val, B_val, e_val, degree_val=30.0, fy_val=355.0):
+def calcular_propiedades(A_val, B_val, e_val, degree_val=30.0):
     mesh_size_val = A_val / 50.0
     puntos, lineas, controles = crear_perfil_omega_puntos(A_val, B_val, e_val, degree_val)
     height, width, wind_proj, perimeter = calcular_dimensiones_tnx(puntos)
@@ -90,13 +90,11 @@ def calcular_propiedades(A_val, B_val, e_val, degree_val=30.0, fy_val=355.0):
     cw = section.get_gamma()
     j = section.get_j()
 
-    Q, clase, esbeltez = verificacion_clase_Q(A_val, e_val, fy_val)
-
-    us_name = f"UV{int(A_val)}x{int(B_val)}x{int(A_val)}x{int(e_val)}"
+    si_name = f"UV{int(A_val)}x{int(B_val)}x{int(A_val)}x{int(e_val)}"
+    peso_n_m = round((area / 1e6) * 7849.049267 * 9.81 * 1000, 4)
 
     return {
-        "US Name": us_name,
-        "SI Name": us_name,
+        "SI Name": si_name,
         "Height [mm]": round(height, 4),
         "Width [mm]": round(width, 4),
         "Wind Proj [mm]": round(wind_proj, 4),
@@ -104,6 +102,7 @@ def calcular_propiedades(A_val, B_val, e_val, degree_val=30.0, fy_val=355.0):
         "Modulus [kPa]": 199947910.894,
         "Density [kg/m3]": 7849.049267,
         "Area [mm²]": round(area, 4),
+        "Peso [N/m]": peso_n_m,
         "Ix [mm⁴]": round(ixx_c, 4),
         "Sx top [mm³]": round(zxx_plus, 4),
         "Sx bot [mm³]": round(zxx_minus, 4),
@@ -117,9 +116,6 @@ def calcular_propiedades(A_val, B_val, e_val, degree_val=30.0, fy_val=355.0):
         "SFx": 1,
         "Cw [mm⁶]": round(cw, 4),
         "J [mm⁴]": round(j, 4),
-        "Clase EC3": clase,
-        "Factor Q": round(Q, 6),
-        "Esbeltez reducida": round(esbeltez, 6),
     }, puntos
 
 
@@ -155,25 +151,21 @@ def calcular():
         A = float(request.form["A"])
         B = float(request.form["B"])
         e = float(request.form["e"])
-        degree = float(request.form.get("degree", 30.0))
-        fy = float(request.form.get("fy", 355.0))
 
         if A <= 0 or B <= 0 or e <= 0:
             raise ValueError("A, B y e deben ser mayores que cero.")
         if e >= A:
             raise ValueError("El espesor e debe ser menor que el ala A.")
 
-        resultados, puntos = calcular_propiedades(A, B, e, degree, fy)
+        resultados, puntos = calcular_propiedades(A, B, e)
         imagen = generar_imagen_perfil(puntos)
         return render_template("index.html", resultados=resultados, imagen=imagen,
-                               A=A, B=B, e=e, degree=degree, fy=fy)
+                               A=A, B=B, e=e)
     except Exception as ex:
         return render_template("index.html", error=str(ex),
                                A=request.form.get("A",""),
                                B=request.form.get("B",""),
-                               e=request.form.get("e",""),
-                               degree=request.form.get("degree","30"),
-                               fy=request.form.get("fy","355"))
+                               e=request.form.get("e",""))
 
 
 if __name__ == "__main__":

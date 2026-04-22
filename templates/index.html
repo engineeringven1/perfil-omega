@@ -101,7 +101,7 @@
 
 <header>
   <h1>Perfil Omega — Propiedades de Sección</h1>
-  <p>Cálculo para TNX Towers · Eurocódigo 3 · sectionproperties</p>
+  <p>By: Darwin Pantaleon</p>
 </header>
 
 <main>
@@ -125,18 +125,6 @@
           <input type="number" id="e" name="e" step="any" required
                  value="{{ e if e is defined else '' }}" placeholder="ej. 6">
         </div>
-        <div class="form-group">
-          <label for="degree">Ángulo de inclinación [°]</label>
-          <input type="number" id="degree" name="degree" step="any"
-                 value="{{ degree if degree is defined else '30' }}">
-          <span class="hint">Por defecto: 30°</span>
-        </div>
-        <div class="form-group">
-          <label for="fy">fy — Límite elástico [MPa]</label>
-          <input type="number" id="fy" name="fy" step="any"
-                 value="{{ fy if fy is defined else '355' }}">
-          <span class="hint">Por defecto: 355 MPa (S355)</span>
-        </div>
       </div>
       <button type="submit">Calcular</button>
     </form>
@@ -150,7 +138,7 @@
 
   {% if resultados %}
   <div class="card">
-    <h2>Resultados — {{ resultados['US Name'] }}</h2>
+    <h2>Resultados — {{ resultados['SI Name'] }}</h2>
     <div class="results-layout">
 
       <div>
@@ -160,7 +148,6 @@
           </thead>
           <tbody>
             <tr class="section-divider"><td colspan="2">Identificación</td></tr>
-            <tr><td>US Name</td><td>{{ resultados['US Name'] }}</td></tr>
             <tr><td>SI Name</td><td>{{ resultados['SI Name'] }}</td></tr>
 
             <tr class="section-divider"><td colspan="2">Dimensiones</td></tr>
@@ -173,6 +160,7 @@
 
             <tr class="section-divider"><td colspan="2">Propiedades de sección</td></tr>
             <tr><td>Area</td><td>{{ resultados['Area [mm²]'] }} mm²</td></tr>
+            <tr><td>Peso</td><td>{{ resultados['Peso [N/m]'] }} N/m</td></tr>
             <tr><td>Ix</td><td>{{ resultados['Ix [mm⁴]'] }} mm⁴</td></tr>
             <tr><td>Sx (top)</td><td>{{ resultados['Sx top [mm³]'] }} mm³</td></tr>
             <tr><td>Sx (bot)</td><td>{{ resultados['Sx bot [mm³]'] }} mm³</td></tr>
@@ -187,17 +175,6 @@
             <tr><td>Cw</td><td>{{ resultados['Cw [mm⁶]'] }} mm⁶</td></tr>
             <tr><td>J</td><td>{{ resultados['J [mm⁴]'] }} mm⁴</td></tr>
 
-            <tr class="section-divider"><td colspan="2">Eurocódigo 3 — Clase de sección</td></tr>
-            <tr>
-              <td>Clase EC3</td>
-              <td>
-                <span class="badge {% if resultados['Clase EC3'] == 3 %}badge-green{% else %}badge-yellow{% endif %}">
-                  Clase {{ resultados['Clase EC3'] }}
-                </span>
-              </td>
-            </tr>
-            <tr><td>Factor Q</td><td>{{ resultados['Factor Q'] }}</td></tr>
-            <tr><td>Esbeltez reducida</td><td>{{ resultados['Esbeltez reducida'] }}</td></tr>
           </tbody>
         </table>
       </div>
