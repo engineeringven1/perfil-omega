@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Perfil Omega — Propiedades de Sección</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #f0f4f8;
+      color: #1a202c;
+      min-height: 100vh;
+    }
+    header {
+      background: linear-gradient(135deg, #1a5c9e 0%, #2d8bba 100%);
+      color: #fff;
+      padding: 1.5rem 2rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    header h1 { font-size: 1.6rem; font-weight: 700; }
+    header p  { font-size: 0.9rem; opacity: 0.85; margin-top: 0.25rem; }
+
+    main { max-width: 1100px; margin: 2rem auto; padding: 0 1rem; }
+
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      padding: 1.5rem 2rem;
+      margin-bottom: 1.5rem;
+    }
+    .card h2 { font-size: 1.1rem; color: #1a5c9e; margin-bottom: 1rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    .form-group label { display: block; font-size: 0.82rem; font-weight: 600; color: #4a5568; margin-bottom: 0.3rem; }
+    .form-group input {
+      width: 100%; padding: 0.55rem 0.75rem;
+      border: 1.5px solid #cbd5e0; border-radius: 6px;
+      font-size: 1rem; transition: border-color 0.2s;
+    }
+    .form-group input:focus { outline: none; border-color: #2d8bba; }
+
+    .hint { font-size: 0.75rem; color: #718096; margin-top: 0.2rem; }
+
+    button[type="submit"] {
+      margin-top: 1.2rem;
+      background: #1a5c9e; color: #fff;
+      border: none; border-radius: 7px;
+      padding: 0.7rem 2rem; font-size: 1rem; font-weight: 600;
+      cursor: pointer; transition: background 0.2s;
+    }
+    button[type="submit"]:hover { background: #2d8bba; }
+
+    .error-box {
+      background: #fff5f5; border: 1.5px solid #fc8181;
+      color: #c53030; border-radius: 8px;
+      padding: 0.9rem 1.2rem; margin-bottom: 1.2rem;
+    }
+
+    .results-layout {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 1.5rem;
+      align-items: start;
+    }
+    @media (max-width: 700px) { .results-layout { grid-template-columns: 1fr; } }
+
+    .results-img img {
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      max-width: 300px;
+    }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    thead tr { background: #ebf4ff; }
+    th { text-align: left; padding: 0.55rem 0.75rem; color: #1a5c9e; font-weight: 600; white-space: nowrap; }
+    td { padding: 0.45rem 0.75rem; border-bottom: 1px solid #e2e8f0; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f7fafc; }
+
+    .badge {
+      display: inline-block; padding: 0.2rem 0.6rem;
+      border-radius: 20px; font-size: 0.78rem; font-weight: 700;
+    }
+    .badge-green { background: #c6f6d5; color: #22543d; }
+    .badge-yellow { background: #fefcbf; color: #744210; }
+
+    .section-divider {
+      font-size: 0.75rem; font-weight: 700; color: #718096;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      padding: 0.5rem 0.75rem; background: #f7fafc;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Perfil Omega — Propiedades de Sección</h1>
+  <p>Cálculo para TNX Towers · Eurocódigo 3 · sectionproperties</p>
+</header>
+
+<main>
+
+  <div class="card">
+    <h2>Parámetros de entrada</h2>
+    <form method="POST" action="/calcular">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="A">A — Ala inclinada [mm]</label>
+          <input type="number" id="A" name="A" step="any" required
+                 value="{{ A if A is defined else '' }}" placeholder="ej. 70">
+        </div>
+        <div class="form-group">
+          <label for="B">B — Base inferior [mm]</label>
+          <input type="number" id="B" name="B" step="any" required
+                 value="{{ B if B is defined else '' }}" placeholder="ej. 80">
+        </div>
+        <div class="form-group">
+          <label for="e">e — Espesor [mm]</label>
+          <input type="number" id="e" name="e" step="any" required
+                 value="{{ e if e is defined else '' }}" placeholder="ej. 6">
+        </div>
+        <div class="form-group">
+          <label for="degree">Ángulo de inclinación [°]</label>
+          <input type="number" id="degree" name="degree" step="any"
+                 value="{{ degree if degree is defined else '30' }}">
+          <span class="hint">Por defecto: 30°</span>
+        </div>
+        <div class="form-group">
+          <label for="fy">fy — Límite elástico [MPa]</label>
+          <input type="number" id="fy" name="fy" step="any"
+                 value="{{ fy if fy is defined else '355' }}">
+          <span class="hint">Por defecto: 355 MPa (S355)</span>
+        </div>
+      </div>
+      <button type="submit">Calcular</button>
+    </form>
+  </div>
+
+  {% if error %}
+  <div class="error-box">
+    <strong>Error:</strong> {{ error }}
+  </div>
+  {% endif %}
+
+  {% if resultados %}
+  <div class="card">
+    <h2>Resultados — {{ resultados['US Name'] }}</h2>
+    <div class="results-layout">
+
+      <div>
+        <table>
+          <thead>
+            <tr><th>Propiedad</th><th>Valor</th></tr>
+          </thead>
+          <tbody>
+            <tr class="section-divider"><td colspan="2">Identificación</td></tr>
+            <tr><td>US Name</td><td>{{ resultados['US Name'] }}</td></tr>
+            <tr><td>SI Name</td><td>{{ resultados['SI Name'] }}</td></tr>
+
+            <tr class="section-divider"><td colspan="2">Dimensiones</td></tr>
+            <tr><td>Height</td><td>{{ resultados['Height [mm]'] }} mm</td></tr>
+            <tr><td>Width</td><td>{{ resultados['Width [mm]'] }} mm</td></tr>
+            <tr><td>Wind Proj</td><td>{{ resultados['Wind Proj [mm]'] }} mm</td></tr>
+            <tr><td>Perimeter</td><td>{{ resultados['Perimeter [mm]'] }} mm</td></tr>
+            <tr><td>Modulus</td><td>{{ "{:,.3f}".format(resultados['Modulus [kPa]']) }} kPa</td></tr>
+            <tr><td>Density</td><td>{{ resultados['Density [kg/m3]'] }} kg/m³</td></tr>
+
+            <tr class="section-divider"><td colspan="2">Propiedades de sección</td></tr>
+            <tr><td>Area</td><td>{{ resultados['Area [mm²]'] }} mm²</td></tr>
+            <tr><td>Ix</td><td>{{ resultados['Ix [mm⁴]'] }} mm⁴</td></tr>
+            <tr><td>Sx (top)</td><td>{{ resultados['Sx top [mm³]'] }} mm³</td></tr>
+            <tr><td>Sx (bot)</td><td>{{ resultados['Sx bot [mm³]'] }} mm³</td></tr>
+            <tr><td>rx</td><td>{{ resultados['rx [mm]'] }} mm</td></tr>
+            <tr><td>SFy</td><td>{{ resultados['SFy'] }}</td></tr>
+            <tr><td>QaQs</td><td>{{ resultados['QaQs'] }}</td></tr>
+            <tr><td>Iy</td><td>{{ resultados['Iy [mm⁴]'] }} mm⁴</td></tr>
+            <tr><td>Sy (top)</td><td>{{ resultados['Sy top [mm³]'] }} mm³</td></tr>
+            <tr><td>Sy (bot)</td><td>{{ resultados['Sy bot [mm³]'] }} mm³</td></tr>
+            <tr><td>ry</td><td>{{ resultados['ry [mm]'] }} mm</td></tr>
+            <tr><td>SFx</td><td>{{ resultados['SFx'] }}</td></tr>
+            <tr><td>Cw</td><td>{{ resultados['Cw [mm⁶]'] }} mm⁶</td></tr>
+            <tr><td>J</td><td>{{ resultados['J [mm⁴]'] }} mm⁴</td></tr>
+
+            <tr class="section-divider"><td colspan="2">Eurocódigo 3 — Clase de sección</td></tr>
+            <tr>
+              <td>Clase EC3</td>
+              <td>
+                <span class="badge {% if resultados['Clase EC3'] == 3 %}badge-green{% else %}badge-yellow{% endif %}">
+                  Clase {{ resultados['Clase EC3'] }}
+                </span>
+              </td>
+            </tr>
+            <tr><td>Factor Q</td><td>{{ resultados['Factor Q'] }}</td></tr>
+            <tr><td>Esbeltez reducida</td><td>{{ resultados['Esbeltez reducida'] }}</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="results-img">
+        <img src="data:image/png;base64,{{ imagen }}" alt="Sección transversal perfil omega">
+      </div>
+
+    </div>
+  </div>
+  {% endif %}
+
+</main>
+</body>
+</html>
