@@ -91,7 +91,7 @@ def calcular_propiedades(A_val, B_val, e_val, degree_val=30.0):
     j = section.get_j()
 
     si_name = f"UV{int(A_val)}x{int(B_val)}x{int(A_val)}x{int(e_val)}"
-    peso_n_m = round((area / 1e6) * 7849.049267 * 9.81 * 1000, 4)
+    peso_n_m = round((area / 1e6) * 7850 * 9.81, 4)
 
     return {
         "SI Name": si_name,
