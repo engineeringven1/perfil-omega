@@ -4,6 +4,7 @@ matplotlib.use("Agg")
 from flask import Flask, render_template, request, jsonify, send_file
 from sectionproperties.pre.geometry import Geometry
 from sectionproperties.analysis import Section
+from shapely.geometry import Polygon as ShapelyPolygon
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import numpy as np
@@ -166,6 +167,114 @@ def calcular():
                                A=request.form.get("A",""),
                                B=request.form.get("B",""),
                                e=request.form.get("e",""))
+
+
+def crear_doble_omega_partes(A1, B1, e1, A2, B2, e2, degree=30.0):
+    pts1, _, _ = crear_perfil_omega_puntos(A1, B1, e1, degree)
+    pts2_up, _, _ = crear_perfil_omega_puntos(A2, B2, e2, degree)
+    pts2 = [(x, -y) for x, y in pts2_up]
+    return pts1, pts2
+
+
+def calcular_propiedades_doble(A1_val, B1_val, e1_val, A2_val, B2_val, e2_val, degree_val=30.0):
+    mesh_size_val = min(A1_val, A2_val) / 50.0
+    pts1, pts2 = crear_doble_omega_partes(A1_val, B1_val, e1_val, A2_val, B2_val, e2_val, degree_val)
+
+    geom1 = Geometry(ShapelyPolygon(pts1))
+    geom2 = Geometry(ShapelyPolygon(pts2))
+    compound = geom1 + geom2
+
+    compound.create_mesh(mesh_sizes=mesh_size_val)
+    section = Section(compound)
+    section.calculate_geometric_properties()
+    section.calculate_warping_properties()
+    section.calculate_plastic_properties()
+
+    area = section.get_area()
+    ixx_c, iyy_c, ixy_c = section.get_ic()
+    zxx_plus, zxx_minus, zyy_plus, zyy_minus = section.get_z()
+    rx, ry = section.get_rc()
+    cw = section.get_gamma()
+    j = section.get_j()
+
+    all_pts = np.array(pts1 + pts2, dtype=float)
+    height = round(all_pts[:, 1].max() - all_pts[:, 1].min(), 4)
+    width = round(all_pts[:, 0].max() - all_pts[:, 0].min(), 4)
+
+    si_name = f"DUV{int(A1_val)}x{int(B1_val)}x{int(e1_val)}-{int(A2_val)}x{int(B2_val)}x{int(e2_val)}"
+    peso_n_m = round((area / 1e6) * 7849.049267 * 9.81, 4)
+
+    return {
+        "SI Name": si_name,
+        "Height [mm]": height,
+        "Width [mm]": width,
+        "Area [mm²]": round(area, 4),
+        "Peso [N/m]": peso_n_m,
+        "Ix [mm⁴]": round(ixx_c, 4),
+        "Sx top [mm³]": round(zxx_plus, 4),
+        "Sx bot [mm³]": round(zxx_minus, 4),
+        "rx [mm]": round(rx, 4),
+        "Iy [mm⁴]": round(iyy_c, 4),
+        "Sy top [mm³]": round(zyy_plus, 4),
+        "Sy bot [mm³]": round(zyy_minus, 4),
+        "ry [mm]": round(ry, 4),
+        "Cw [mm⁶]": round(cw, 4),
+        "J [mm⁴]": round(j, 4),
+    }, pts1, pts2
+
+
+def generar_imagen_doble_omega(pts1, pts2):
+    fig, ax = plt.subplots(figsize=(5, 5))
+    for pts in [pts1, pts2]:
+        closed = list(pts) + [pts[0]]
+        xs = [p[0] for p in closed]
+        ys = [p[1] for p in closed]
+        ax.fill(xs[:-1], ys[:-1], color="#4A90D9", alpha=0.4)
+        ax.plot(xs, ys, color="#1A5C9E", linewidth=2)
+    ax.axhline(y=0, color="#718096", linewidth=0.8, linestyle="--")
+    ax.set_aspect("equal")
+    ax.set_xlabel("x [mm]")
+    ax.set_ylabel("y [mm]")
+    ax.set_title("Doble Omega — Sección Transversal")
+    ax.grid(True, linestyle="--", alpha=0.4)
+    plt.tight_layout()
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png", dpi=100)
+    plt.close(fig)
+    buf.seek(0)
+    return base64.b64encode(buf.read()).decode("utf-8")
+
+
+@app.route("/calcular_doble", methods=["POST"])
+def calcular_doble():
+    try:
+        A1 = float(request.form["A1"])
+        B1 = float(request.form["B1"])
+        e1 = float(request.form["e1"])
+        A2 = float(request.form["A2"])
+        B2 = float(request.form["B2"])
+        e2 = float(request.form["e2"])
+
+        if any(v <= 0 for v in [A1, B1, e1, A2, B2, e2]):
+            raise ValueError("Todos los parámetros deben ser mayores que cero.")
+        if e1 >= A1:
+            raise ValueError("El espesor e1 debe ser menor que el ala A1.")
+        if e2 >= A2:
+            raise ValueError("El espesor e2 debe ser menor que el ala A2.")
+
+        resultados_doble, pts1, pts2 = calcular_propiedades_doble(A1, B1, e1, A2, B2, e2)
+        imagen_doble = generar_imagen_doble_omega(pts1, pts2)
+        return render_template("index.html",
+                               resultados_doble=resultados_doble, imagen_doble=imagen_doble,
+                               A1=A1, B1=B1, e1=e1, A2=A2, B2=B2, e2=e2)
+    except Exception as ex:
+        return render_template("index.html", error_doble=str(ex),
+                               A1=request.form.get("A1", ""),
+                               B1=request.form.get("B1", ""),
+                               e1=request.form.get("e1", ""),
+                               A2=request.form.get("A2", ""),
+                               B2=request.form.get("B2", ""),
+                               e2=request.form.get("e2", ""))
 
 
 if __name__ == "__main__":

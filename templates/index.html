@@ -187,6 +187,97 @@
   </div>
   {% endif %}
 
+  <!-- ===== DOBLE OMEGA ===== -->
+  <div class="card">
+    <h2>Doble Omega — Propiedades de Sección</h2>
+    <p style="font-size:0.8rem;color:#718096;margin-bottom:1rem;">By: Darwin Pantaleon &nbsp;·&nbsp; Ángulo fijo 30° &nbsp;·&nbsp; Acero S355</p>
+    <form method="POST" action="/calcular_doble">
+      <p style="font-size:0.78rem;font-weight:700;color:#4a5568;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.6rem;">Montante Existente</p>
+      <div class="form-grid" style="margin-bottom:1rem;">
+        <div class="form-group">
+          <label for="A1">A1 — Ala inclinada [mm]</label>
+          <input type="number" id="A1" name="A1" step="any" required
+                 value="{{ A1 if A1 is defined else '' }}" placeholder="ej. 70">
+        </div>
+        <div class="form-group">
+          <label for="B1">B1 — Base [mm]</label>
+          <input type="number" id="B1" name="B1" step="any" required
+                 value="{{ B1 if B1 is defined else '' }}" placeholder="ej. 80">
+        </div>
+        <div class="form-group">
+          <label for="e1">e1 — Espesor [mm]</label>
+          <input type="number" id="e1" name="e1" step="any" required
+                 value="{{ e1 if e1 is defined else '' }}" placeholder="ej. 6">
+        </div>
+      </div>
+      <p style="font-size:0.78rem;font-weight:700;color:#4a5568;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.6rem;">Montante Refuerzo</p>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="A2">A2 — Ala inclinada [mm]</label>
+          <input type="number" id="A2" name="A2" step="any" required
+                 value="{{ A2 if A2 is defined else '' }}" placeholder="ej. 70">
+        </div>
+        <div class="form-group">
+          <label for="B2">B2 — Base [mm]</label>
+          <input type="number" id="B2" name="B2" step="any" required
+                 value="{{ B2 if B2 is defined else '' }}" placeholder="ej. 80">
+        </div>
+        <div class="form-group">
+          <label for="e2">e2 — Espesor [mm]</label>
+          <input type="number" id="e2" name="e2" step="any" required
+                 value="{{ e2 if e2 is defined else '' }}" placeholder="ej. 6">
+        </div>
+      </div>
+      <button type="submit">Calcular Doble Omega</button>
+    </form>
+  </div>
+
+  {% if error_doble %}
+  <div class="error-box">
+    <strong>Error (Doble Omega):</strong> {{ error_doble }}
+  </div>
+  {% endif %}
+
+  {% if resultados_doble %}
+  <div class="card">
+    <h2>Resultados Doble Omega — {{ resultados_doble['SI Name'] }}</h2>
+    <div class="results-layout">
+      <div>
+        <table>
+          <thead>
+            <tr><th>Propiedad</th><th>Valor</th></tr>
+          </thead>
+          <tbody>
+            <tr class="section-divider"><td colspan="2">Identificación</td></tr>
+            <tr><td>SI Name</td><td>{{ resultados_doble['SI Name'] }}</td></tr>
+
+            <tr class="section-divider"><td colspan="2">Dimensiones</td></tr>
+            <tr><td>Height</td><td>{{ resultados_doble['Height [mm]'] }} mm</td></tr>
+            <tr><td>Width</td><td>{{ resultados_doble['Width [mm]'] }} mm</td></tr>
+
+            <tr class="section-divider"><td colspan="2">Propiedades de sección</td></tr>
+            <tr><td>Area</td><td>{{ resultados_doble['Area [mm²]'] }} mm²</td></tr>
+            <tr><td>Peso</td><td>{{ resultados_doble['Peso [N/m]'] }} N/m</td></tr>
+            <tr><td>Ix</td><td>{{ resultados_doble['Ix [mm⁴]'] }} mm⁴</td></tr>
+            <tr><td>Sx (top)</td><td>{{ resultados_doble['Sx top [mm³]'] }} mm³</td></tr>
+            <tr><td>Sx (bot)</td><td>{{ resultados_doble['Sx bot [mm³]'] }} mm³</td></tr>
+            <tr><td>rx</td><td>{{ resultados_doble['rx [mm]'] }} mm</td></tr>
+            <tr><td>Iy</td><td>{{ resultados_doble['Iy [mm⁴]'] }} mm⁴</td></tr>
+            <tr><td>Sy (top)</td><td>{{ resultados_doble['Sy top [mm³]'] }} mm³</td></tr>
+            <tr><td>Sy (bot)</td><td>{{ resultados_doble['Sy bot [mm³]'] }} mm³</td></tr>
+            <tr><td>ry</td><td>{{ resultados_doble['ry [mm]'] }} mm</td></tr>
+            <tr><td>Cw</td><td>{{ resultados_doble['Cw [mm⁶]'] }} mm⁶</td></tr>
+            <tr><td>J</td><td>{{ resultados_doble['J [mm⁴]'] }} mm⁴</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="results-img">
+        <img src="data:image/png;base64,{{ imagen_doble }}" alt="Sección transversal doble omega">
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
 </main>
 </body>
 </html>
