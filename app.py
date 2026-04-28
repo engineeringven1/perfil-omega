@@ -73,7 +73,7 @@ def calcular_dimensiones_tnx(puntos):
 
 
 def calcular_propiedades(A_val, B_val, e_val, degree_val=30.0):
-    mesh_size_val = A_val / 50.0
+    mesh_size_val = max(A_val / 15.0, 2.0)
     puntos, lineas, controles = crear_perfil_omega_puntos(A_val, B_val, e_val, degree_val)
     height, width, wind_proj, perimeter = calcular_dimensiones_tnx(puntos)
 
@@ -216,7 +216,7 @@ def crear_doble_omega_partes(A1, B1, e1, A2, B2, e2, degree=30.0):
 
 
 def calcular_propiedades_doble(A1_val, B1_val, e1_val, A2_val, B2_val, e2_val, degree_val=30.0):
-    mesh_size_val = min(A1_val, A2_val) / 50.0
+    mesh_size_val = max(min(A1_val, A2_val) / 15.0, 2.0)
     pts1, pts2 = crear_doble_omega_partes(A1_val, B1_val, e1_val, A2_val, B2_val, e2_val, degree_val)
 
     geom1 = Geometry(ShapelyPolygon(pts1))
