@@ -211,7 +211,9 @@ def crear_doble_omega_partes(A1, B1, e1, A2, B2, e2, degree=30.0):
     cx2 = (max(xs2) + min(xs2)) / 2
     dx = cx1 - cx2
 
-    pts2 = [(x + dx, -y) for x, y in pts2_up]
+    # Pequeño gap vertical para evitar bordes coincidentes en y=0
+    GAP = 0.01
+    pts2 = [(x + dx, -y - GAP) for x, y in pts2_up]
     return pts1, pts2
 
 
