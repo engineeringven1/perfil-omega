@@ -153,15 +153,13 @@ def calcular():
         B = float(request.form["B"])
         e = float(request.form["e"])
         unidad = request.form.get("unidad", "mm")
-        fi = 10.0 if unidad == "cm" else 1.0
 
-        A_mm, B_mm, e_mm = A * fi, B * fi, e * fi
-        if A_mm <= 0 or B_mm <= 0 or e_mm <= 0:
+        if A <= 0 or B <= 0 or e <= 0:
             raise ValueError("A, B y e deben ser mayores que cero.")
-        if e_mm >= A_mm:
+        if e >= A:
             raise ValueError("El espesor e debe ser menor que el ala A.")
 
-        resultados, puntos = calcular_propiedades(A_mm, B_mm, e_mm)
+        resultados, puntos = calcular_propiedades(A, B, e)
         resultados, u = _aplicar_unidad(resultados, unidad)
         imagen = generar_imagen_perfil(puntos)
         return render_template("index.html", resultados=resultados, imagen=imagen,
@@ -296,18 +294,15 @@ def calcular_doble():
         B2 = float(request.form["B2"])
         e2 = float(request.form["e2"])
         unidad_doble = request.form.get("unidad_doble", "mm")
-        fi = 10.0 if unidad_doble == "cm" else 1.0
 
-        A1m, B1m, e1m = A1*fi, B1*fi, e1*fi
-        A2m, B2m, e2m = A2*fi, B2*fi, e2*fi
-        if any(v <= 0 for v in [A1m, B1m, e1m, A2m, B2m, e2m]):
+        if any(v <= 0 for v in [A1, B1, e1, A2, B2, e2]):
             raise ValueError("Todos los parámetros deben ser mayores que cero.")
-        if e1m >= A1m:
+        if e1 >= A1:
             raise ValueError("El espesor e1 debe ser menor que el ala A1.")
-        if e2m >= A2m:
+        if e2 >= A2:
             raise ValueError("El espesor e2 debe ser menor que el ala A2.")
 
-        resultados_doble, pts1, pts2 = calcular_propiedades_doble(A1m, B1m, e1m, A2m, B2m, e2m)
+        resultados_doble, pts1, pts2 = calcular_propiedades_doble(A1, B1, e1, A2, B2, e2)
         resultados_doble, u_doble = _aplicar_unidad(resultados_doble, unidad_doble)
         imagen_doble = generar_imagen_doble_omega(pts1, pts2)
         return render_template("index.html",

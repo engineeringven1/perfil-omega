@@ -138,17 +138,17 @@
     <form id="form-simple" method="POST" action="/calcular">
       <div class="form-grid">
         <div class="form-group">
-          <label for="A">A — Ala inclinada [<span class="ulbl-s">mm</span>]</label>
+          <label for="A">A — Ala inclinada [mm]</label>
           <input type="number" id="A" name="A" step="any" required
                  value="{{ A if A is defined else '' }}" placeholder="ej. 70">
         </div>
         <div class="form-group">
-          <label for="B">B — Base [<span class="ulbl-s">mm</span>]</label>
+          <label for="B">B — Base [mm]</label>
           <input type="number" id="B" name="B" step="any" required
                  value="{{ B if B is defined else '' }}" placeholder="ej. 80">
         </div>
         <div class="form-group">
-          <label for="e">e — Espesor [<span class="ulbl-s">mm</span>]</label>
+          <label for="e">e — Espesor [mm]</label>
           <input type="number" id="e" name="e" step="any" required
                  value="{{ e if e is defined else '' }}" placeholder="ej. 6">
         </div>
@@ -229,17 +229,17 @@
       <p class="group-label">Montante Existente</p>
       <div class="form-grid" style="margin-bottom:1.2rem;">
         <div class="form-group">
-          <label for="A1">A1 — Ala inclinada [<span class="ulbl-d">mm</span>]</label>
+          <label for="A1">A1 — Ala inclinada [mm]</label>
           <input type="number" id="A1" name="A1" step="any" required
                  value="{{ A1 if A1 is defined else '' }}" placeholder="ej. 70">
         </div>
         <div class="form-group">
-          <label for="B1">B1 — Base [<span class="ulbl-d">mm</span>]</label>
+          <label for="B1">B1 — Base [mm]</label>
           <input type="number" id="B1" name="B1" step="any" required
                  value="{{ B1 if B1 is defined else '' }}" placeholder="ej. 80">
         </div>
         <div class="form-group">
-          <label for="e1">e1 — Espesor [<span class="ulbl-d">mm</span>]</label>
+          <label for="e1">e1 — Espesor [mm]</label>
           <input type="number" id="e1" name="e1" step="any" required
                  value="{{ e1 if e1 is defined else '' }}" placeholder="ej. 6">
         </div>
@@ -248,17 +248,17 @@
       <p class="group-label">Montante Refuerzo</p>
       <div class="form-grid">
         <div class="form-group">
-          <label for="A2">A2 — Ala inclinada [<span class="ulbl-d">mm</span>]</label>
+          <label for="A2">A2 — Ala inclinada [mm]</label>
           <input type="number" id="A2" name="A2" step="any" required
                  value="{{ A2 if A2 is defined else '' }}" placeholder="ej. 70">
         </div>
         <div class="form-group">
-          <label for="B2">B2 — Base [<span class="ulbl-d">mm</span>]</label>
+          <label for="B2">B2 — Base [mm]</label>
           <input type="number" id="B2" name="B2" step="any" required
                  value="{{ B2 if B2 is defined else '' }}" placeholder="ej. 80">
         </div>
         <div class="form-group">
-          <label for="e2">e2 — Espesor [<span class="ulbl-d">mm</span>]</label>
+          <label for="e2">e2 — Espesor [mm]</label>
           <input type="number" id="e2" name="e2" step="any" required
                  value="{{ e2 if e2 is defined else '' }}" placeholder="ej. 6">
         </div>
@@ -326,19 +326,6 @@
 
 </main>
 
-<script>
-  // Actualiza etiquetas de unidad en el formulario al cambiar el toggle
-  document.querySelectorAll('.radio-s').forEach(r => {
-    r.addEventListener('change', function () {
-      document.querySelectorAll('.ulbl-s').forEach(el => el.textContent = this.value);
-    });
-  });
-  document.querySelectorAll('.radio-d').forEach(r => {
-    r.addEventListener('change', function () {
-      document.querySelectorAll('.ulbl-d').forEach(el => el.textContent = this.value);
-    });
-  });
-</script>
 
 </body>
 </html>
