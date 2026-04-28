@@ -47,14 +47,41 @@
 
     .hint { font-size: 0.75rem; color: #718096; margin-top: 0.2rem; }
 
+    .form-actions { display: flex; align-items: center; gap: 1rem; margin-top: 1.2rem; flex-wrap: wrap; }
+
     button[type="submit"] {
-      margin-top: 1.2rem;
       background: #1a5c9e; color: #fff;
       border: none; border-radius: 7px;
       padding: 0.7rem 2rem; font-size: 1rem; font-weight: 600;
       cursor: pointer; transition: background 0.2s;
     }
     button[type="submit"]:hover { background: #2d8bba; }
+
+    /* Toggle unidades */
+    .unit-toggle {
+      display: inline-flex;
+      border: 1.5px solid #cbd5e0;
+      border-radius: 7px;
+      overflow: hidden;
+      font-size: 0.88rem;
+      font-weight: 700;
+    }
+    .unit-toggle label {
+      padding: 0.68rem 1.1rem;
+      cursor: pointer;
+      color: #4a5568;
+      transition: background 0.15s, color 0.15s;
+      user-select: none;
+    }
+    .unit-toggle input[type="radio"] { display: none; }
+    .unit-toggle input[type="radio"]:checked + span {
+      background: #1a5c9e;
+      color: #fff;
+    }
+    .unit-toggle label:has(input:checked) {
+      background: #1a5c9e;
+      color: #fff;
+    }
 
     .error-box {
       background: #fff5f5; border: 1.5px solid #fc8181;
@@ -83,17 +110,16 @@
     tr:last-child td { border-bottom: none; }
     tr:hover td { background: #f7fafc; }
 
-    .badge {
-      display: inline-block; padding: 0.2rem 0.6rem;
-      border-radius: 20px; font-size: 0.78rem; font-weight: 700;
-    }
-    .badge-green { background: #c6f6d5; color: #22543d; }
-    .badge-yellow { background: #fefcbf; color: #744210; }
-
     .section-divider {
       font-size: 0.75rem; font-weight: 700; color: #718096;
       text-transform: uppercase; letter-spacing: 0.05em;
       padding: 0.5rem 0.75rem; background: #f7fafc;
+    }
+
+    .group-label {
+      font-size: 0.78rem; font-weight: 700; color: #4a5568;
+      text-transform: uppercase; letter-spacing: .05em;
+      margin-bottom: .6rem;
     }
   </style>
 </head>
@@ -106,136 +132,158 @@
 
 <main>
 
+  <!-- ===== OMEGA SIMPLE ===== -->
   <div class="card">
-    <h2>Parámetros de entrada</h2>
-    <form method="POST" action="/calcular">
+    <h2>Omega Simple — Parámetros de entrada</h2>
+    <form id="form-simple" method="POST" action="/calcular">
       <div class="form-grid">
         <div class="form-group">
-          <label for="A">A — Ala inclinada [mm]</label>
+          <label for="A">A — Ala inclinada [<span class="ulbl-s">mm</span>]</label>
           <input type="number" id="A" name="A" step="any" required
                  value="{{ A if A is defined else '' }}" placeholder="ej. 70">
         </div>
         <div class="form-group">
-          <label for="B">B — Base [mm]</label>
+          <label for="B">B — Base [<span class="ulbl-s">mm</span>]</label>
           <input type="number" id="B" name="B" step="any" required
                  value="{{ B if B is defined else '' }}" placeholder="ej. 80">
         </div>
         <div class="form-group">
-          <label for="e">e — Espesor [mm]</label>
+          <label for="e">e — Espesor [<span class="ulbl-s">mm</span>]</label>
           <input type="number" id="e" name="e" step="any" required
                  value="{{ e if e is defined else '' }}" placeholder="ej. 6">
         </div>
       </div>
-      <button type="submit">Calcular</button>
+      <div class="form-actions">
+        <button type="submit">Calcular</button>
+        <div class="unit-toggle">
+          <label>
+            <input type="radio" name="unidad" value="mm" class="radio-s"
+                   {% if unidad is not defined or unidad == 'mm' %}checked{% endif %}>
+            mm
+          </label>
+          <label>
+            <input type="radio" name="unidad" value="cm" class="radio-s"
+                   {% if unidad is defined and unidad == 'cm' %}checked{% endif %}>
+            cm
+          </label>
+        </div>
+      </div>
     </form>
   </div>
 
   {% if error %}
-  <div class="error-box">
-    <strong>Error:</strong> {{ error }}
-  </div>
+  <div class="error-box"><strong>Error:</strong> {{ error }}</div>
   {% endif %}
 
   {% if resultados %}
   <div class="card">
     <h2>Resultados — {{ resultados['SI Name'] }}</h2>
     <div class="results-layout">
-
       <div>
         <table>
-          <thead>
-            <tr><th>Propiedad</th><th>Valor</th></tr>
-          </thead>
+          <thead><tr><th>Propiedad</th><th>Valor</th></tr></thead>
           <tbody>
             <tr class="section-divider"><td colspan="2">Identificación</td></tr>
             <tr><td>SI Name</td><td>{{ resultados['SI Name'] }}</td></tr>
 
             <tr class="section-divider"><td colspan="2">Dimensiones</td></tr>
-            <tr><td>Height</td><td>{{ resultados['Height [mm]'] }} mm</td></tr>
-            <tr><td>Width</td><td>{{ resultados['Width [mm]'] }} mm</td></tr>
-            <tr><td>Wind Proj</td><td>{{ resultados['Wind Proj [mm]'] }} mm</td></tr>
-            <tr><td>Perimeter</td><td>{{ resultados['Perimeter [mm]'] }} mm</td></tr>
+            <tr><td>Height</td><td>{{ resultados['Height [mm]'] }} {{ u.len }}</td></tr>
+            <tr><td>Width</td><td>{{ resultados['Width [mm]'] }} {{ u.len }}</td></tr>
+            <tr><td>Wind Proj</td><td>{{ resultados['Wind Proj [mm]'] }} {{ u.len }}</td></tr>
+            <tr><td>Perimeter</td><td>{{ resultados['Perimeter [mm]'] }} {{ u.len }}</td></tr>
             <tr><td>Modulus</td><td>{{ "{:,.3f}".format(resultados['Modulus [kPa]']) }} kPa</td></tr>
             <tr><td>Density</td><td>{{ resultados['Density [kg/m3]'] }} kg/m³</td></tr>
 
             <tr class="section-divider"><td colspan="2">Propiedades de sección</td></tr>
-            <tr><td>Area</td><td>{{ resultados['Area [mm²]'] }} mm²</td></tr>
+            <tr><td>Area</td><td>{{ resultados['Area [mm²]'] }} {{ u.area }}</td></tr>
             <tr><td>Peso</td><td>{{ resultados['Peso [N/m]'] }} N/m</td></tr>
-            <tr><td>Ix</td><td>{{ resultados['Ix [mm⁴]'] }} mm⁴</td></tr>
-            <tr><td>Sx (top)</td><td>{{ resultados['Sx top [mm³]'] }} mm³</td></tr>
-            <tr><td>Sx (bot)</td><td>{{ resultados['Sx bot [mm³]'] }} mm³</td></tr>
-            <tr><td>rx</td><td>{{ resultados['rx [mm]'] }} mm</td></tr>
+            <tr><td>Ix</td><td>{{ resultados['Ix [mm⁴]'] }} {{ u.iner }}</td></tr>
+            <tr><td>Sx (top)</td><td>{{ resultados['Sx top [mm³]'] }} {{ u.mod }}</td></tr>
+            <tr><td>Sx (bot)</td><td>{{ resultados['Sx bot [mm³]'] }} {{ u.mod }}</td></tr>
+            <tr><td>rx</td><td>{{ resultados['rx [mm]'] }} {{ u.len }}</td></tr>
             <tr><td>SFy</td><td>{{ resultados['SFy'] }}</td></tr>
             <tr><td>QaQs</td><td>{{ resultados['QaQs'] }}</td></tr>
-            <tr><td>Iy</td><td>{{ resultados['Iy [mm⁴]'] }} mm⁴</td></tr>
-            <tr><td>Sy (top)</td><td>{{ resultados['Sy top [mm³]'] }} mm³</td></tr>
-            <tr><td>Sy (bot)</td><td>{{ resultados['Sy bot [mm³]'] }} mm³</td></tr>
-            <tr><td>ry</td><td>{{ resultados['ry [mm]'] }} mm</td></tr>
+            <tr><td>Iy</td><td>{{ resultados['Iy [mm⁴]'] }} {{ u.iner }}</td></tr>
+            <tr><td>Sy (top)</td><td>{{ resultados['Sy top [mm³]'] }} {{ u.mod }}</td></tr>
+            <tr><td>Sy (bot)</td><td>{{ resultados['Sy bot [mm³]'] }} {{ u.mod }}</td></tr>
+            <tr><td>ry</td><td>{{ resultados['ry [mm]'] }} {{ u.len }}</td></tr>
             <tr><td>SFx</td><td>{{ resultados['SFx'] }}</td></tr>
-            <tr><td>Cw</td><td>{{ resultados['Cw [mm⁶]'] }} mm⁶</td></tr>
-            <tr><td>J</td><td>{{ resultados['J [mm⁴]'] }} mm⁴</td></tr>
-
+            <tr><td>Cw</td><td>{{ resultados['Cw [mm⁶]'] }} {{ u.warp }}</td></tr>
+            <tr><td>J</td><td>{{ resultados['J [mm⁴]'] }} {{ u.iner }}</td></tr>
           </tbody>
         </table>
       </div>
-
       <div class="results-img">
         <img src="data:image/png;base64,{{ imagen }}" alt="Sección transversal perfil omega">
       </div>
-
     </div>
   </div>
   {% endif %}
 
   <!-- ===== DOBLE OMEGA ===== -->
   <div class="card">
-    <h2>Doble Omega — Propiedades de Sección</h2>
-    <p style="font-size:0.8rem;color:#718096;margin-bottom:1rem;">By: Darwin Pantaleon &nbsp;·&nbsp; Ángulo fijo 30° &nbsp;·&nbsp; Acero S355</p>
-    <form method="POST" action="/calcular_doble">
-      <p style="font-size:0.78rem;font-weight:700;color:#4a5568;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.6rem;">Montante Existente</p>
-      <div class="form-grid" style="margin-bottom:1rem;">
+    <h2>Doble Omega — Parámetros de entrada</h2>
+    <p style="font-size:0.8rem;color:#718096;margin-bottom:1rem;">Ángulo fijo 30° · Acero S355</p>
+    <form id="form-doble" method="POST" action="/calcular_doble">
+
+      <p class="group-label">Montante Existente</p>
+      <div class="form-grid" style="margin-bottom:1.2rem;">
         <div class="form-group">
-          <label for="A1">A1 — Ala inclinada [mm]</label>
+          <label for="A1">A1 — Ala inclinada [<span class="ulbl-d">mm</span>]</label>
           <input type="number" id="A1" name="A1" step="any" required
                  value="{{ A1 if A1 is defined else '' }}" placeholder="ej. 70">
         </div>
         <div class="form-group">
-          <label for="B1">B1 — Base [mm]</label>
+          <label for="B1">B1 — Base [<span class="ulbl-d">mm</span>]</label>
           <input type="number" id="B1" name="B1" step="any" required
                  value="{{ B1 if B1 is defined else '' }}" placeholder="ej. 80">
         </div>
         <div class="form-group">
-          <label for="e1">e1 — Espesor [mm]</label>
+          <label for="e1">e1 — Espesor [<span class="ulbl-d">mm</span>]</label>
           <input type="number" id="e1" name="e1" step="any" required
                  value="{{ e1 if e1 is defined else '' }}" placeholder="ej. 6">
         </div>
       </div>
-      <p style="font-size:0.78rem;font-weight:700;color:#4a5568;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.6rem;">Montante Refuerzo</p>
+
+      <p class="group-label">Montante Refuerzo</p>
       <div class="form-grid">
         <div class="form-group">
-          <label for="A2">A2 — Ala inclinada [mm]</label>
+          <label for="A2">A2 — Ala inclinada [<span class="ulbl-d">mm</span>]</label>
           <input type="number" id="A2" name="A2" step="any" required
                  value="{{ A2 if A2 is defined else '' }}" placeholder="ej. 70">
         </div>
         <div class="form-group">
-          <label for="B2">B2 — Base [mm]</label>
+          <label for="B2">B2 — Base [<span class="ulbl-d">mm</span>]</label>
           <input type="number" id="B2" name="B2" step="any" required
                  value="{{ B2 if B2 is defined else '' }}" placeholder="ej. 80">
         </div>
         <div class="form-group">
-          <label for="e2">e2 — Espesor [mm]</label>
+          <label for="e2">e2 — Espesor [<span class="ulbl-d">mm</span>]</label>
           <input type="number" id="e2" name="e2" step="any" required
                  value="{{ e2 if e2 is defined else '' }}" placeholder="ej. 6">
         </div>
       </div>
-      <button type="submit">Calcular Doble Omega</button>
+
+      <div class="form-actions">
+        <button type="submit">Calcular Doble Omega</button>
+        <div class="unit-toggle">
+          <label>
+            <input type="radio" name="unidad_doble" value="mm" class="radio-d"
+                   {% if unidad_doble is not defined or unidad_doble == 'mm' %}checked{% endif %}>
+            mm
+          </label>
+          <label>
+            <input type="radio" name="unidad_doble" value="cm" class="radio-d"
+                   {% if unidad_doble is defined and unidad_doble == 'cm' %}checked{% endif %}>
+            cm
+          </label>
+        </div>
+      </div>
     </form>
   </div>
 
   {% if error_doble %}
-  <div class="error-box">
-    <strong>Error (Doble Omega):</strong> {{ error_doble }}
-  </div>
+  <div class="error-box"><strong>Error (Doble Omega):</strong> {{ error_doble }}</div>
   {% endif %}
 
   {% if resultados_doble %}
@@ -244,30 +292,28 @@
     <div class="results-layout">
       <div>
         <table>
-          <thead>
-            <tr><th>Propiedad</th><th>Valor</th></tr>
-          </thead>
+          <thead><tr><th>Propiedad</th><th>Valor</th></tr></thead>
           <tbody>
             <tr class="section-divider"><td colspan="2">Identificación</td></tr>
             <tr><td>SI Name</td><td>{{ resultados_doble['SI Name'] }}</td></tr>
 
             <tr class="section-divider"><td colspan="2">Dimensiones</td></tr>
-            <tr><td>Height</td><td>{{ resultados_doble['Height [mm]'] }} mm</td></tr>
-            <tr><td>Width</td><td>{{ resultados_doble['Width [mm]'] }} mm</td></tr>
+            <tr><td>Height</td><td>{{ resultados_doble['Height [mm]'] }} {{ u_doble.len }}</td></tr>
+            <tr><td>Width</td><td>{{ resultados_doble['Width [mm]'] }} {{ u_doble.len }}</td></tr>
 
             <tr class="section-divider"><td colspan="2">Propiedades de sección</td></tr>
-            <tr><td>Area</td><td>{{ resultados_doble['Area [mm²]'] }} mm²</td></tr>
+            <tr><td>Area</td><td>{{ resultados_doble['Area [mm²]'] }} {{ u_doble.area }}</td></tr>
             <tr><td>Peso</td><td>{{ resultados_doble['Peso [N/m]'] }} N/m</td></tr>
-            <tr><td>Ix</td><td>{{ resultados_doble['Ix [mm⁴]'] }} mm⁴</td></tr>
-            <tr><td>Sx (top)</td><td>{{ resultados_doble['Sx top [mm³]'] }} mm³</td></tr>
-            <tr><td>Sx (bot)</td><td>{{ resultados_doble['Sx bot [mm³]'] }} mm³</td></tr>
-            <tr><td>rx</td><td>{{ resultados_doble['rx [mm]'] }} mm</td></tr>
-            <tr><td>Iy</td><td>{{ resultados_doble['Iy [mm⁴]'] }} mm⁴</td></tr>
-            <tr><td>Sy (top)</td><td>{{ resultados_doble['Sy top [mm³]'] }} mm³</td></tr>
-            <tr><td>Sy (bot)</td><td>{{ resultados_doble['Sy bot [mm³]'] }} mm³</td></tr>
-            <tr><td>ry</td><td>{{ resultados_doble['ry [mm]'] }} mm</td></tr>
-            <tr><td>Cw</td><td>{{ resultados_doble['Cw [mm⁶]'] }} mm⁶</td></tr>
-            <tr><td>J</td><td>{{ resultados_doble['J [mm⁴]'] }} mm⁴</td></tr>
+            <tr><td>Ix</td><td>{{ resultados_doble['Ix [mm⁴]'] }} {{ u_doble.iner }}</td></tr>
+            <tr><td>Sx (top)</td><td>{{ resultados_doble['Sx top [mm³]'] }} {{ u_doble.mod }}</td></tr>
+            <tr><td>Sx (bot)</td><td>{{ resultados_doble['Sx bot [mm³]'] }} {{ u_doble.mod }}</td></tr>
+            <tr><td>rx</td><td>{{ resultados_doble['rx [mm]'] }} {{ u_doble.len }}</td></tr>
+            <tr><td>Iy</td><td>{{ resultados_doble['Iy [mm⁴]'] }} {{ u_doble.iner }}</td></tr>
+            <tr><td>Sy (top)</td><td>{{ resultados_doble['Sy top [mm³]'] }} {{ u_doble.mod }}</td></tr>
+            <tr><td>Sy (bot)</td><td>{{ resultados_doble['Sy bot [mm³]'] }} {{ u_doble.mod }}</td></tr>
+            <tr><td>ry</td><td>{{ resultados_doble['ry [mm]'] }} {{ u_doble.len }}</td></tr>
+            <tr><td>Cw</td><td>{{ resultados_doble['Cw [mm⁶]'] }} {{ u_doble.warp }}</td></tr>
+            <tr><td>J</td><td>{{ resultados_doble['J [mm⁴]'] }} {{ u_doble.iner }}</td></tr>
           </tbody>
         </table>
       </div>
@@ -279,5 +325,20 @@
   {% endif %}
 
 </main>
+
+<script>
+  // Actualiza etiquetas de unidad en el formulario al cambiar el toggle
+  document.querySelectorAll('.radio-s').forEach(r => {
+    r.addEventListener('change', function () {
+      document.querySelectorAll('.ulbl-s').forEach(el => el.textContent = this.value);
+    });
+  });
+  document.querySelectorAll('.radio-d').forEach(r => {
+    r.addEventListener('change', function () {
+      document.querySelectorAll('.ulbl-d').forEach(el => el.textContent = this.value);
+    });
+  });
+</script>
+
 </body>
 </html>

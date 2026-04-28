@@ -143,7 +143,7 @@ def generar_imagen_perfil(puntos):
 
 @app.route("/", methods=["GET"])
 def index():
-    return render_template("index.html")
+    return render_template("index.html", u=_u_default(), u_doble=_u_default())
 
 
 @app.route("/calcular", methods=["POST"])
@@ -152,27 +152,68 @@ def calcular():
         A = float(request.form["A"])
         B = float(request.form["B"])
         e = float(request.form["e"])
+        unidad = request.form.get("unidad", "mm")
+        fi = 10.0 if unidad == "cm" else 1.0
 
-        if A <= 0 or B <= 0 or e <= 0:
+        A_mm, B_mm, e_mm = A * fi, B * fi, e * fi
+        if A_mm <= 0 or B_mm <= 0 or e_mm <= 0:
             raise ValueError("A, B y e deben ser mayores que cero.")
-        if e >= A:
+        if e_mm >= A_mm:
             raise ValueError("El espesor e debe ser menor que el ala A.")
 
-        resultados, puntos = calcular_propiedades(A, B, e)
+        resultados, puntos = calcular_propiedades(A_mm, B_mm, e_mm)
+        resultados, u = _aplicar_unidad(resultados, unidad)
         imagen = generar_imagen_perfil(puntos)
         return render_template("index.html", resultados=resultados, imagen=imagen,
-                               A=A, B=B, e=e)
+                               A=A, B=B, e=e, unidad=unidad, u=u, u_doble=_u_default())
     except Exception as ex:
         return render_template("index.html", error=str(ex),
                                A=request.form.get("A",""),
                                B=request.form.get("B",""),
-                               e=request.form.get("e",""))
+                               e=request.form.get("e",""),
+                               unidad=request.form.get("unidad","mm"),
+                               u=_u_default(), u_doble=_u_default())
+
+
+_CONV = {
+    "Height [mm]":    0.1,   "Width [mm]":     0.1,
+    "Wind Proj [mm]": 0.1,   "Perimeter [mm]": 0.1,
+    "Area [mm²]":     0.01,
+    "rx [mm]":        0.1,   "ry [mm]":        0.1,
+    "Ix [mm⁴]":      1e-4,  "Iy [mm⁴]":      1e-4,
+    "Sx top [mm³]":  1e-3,  "Sx bot [mm³]":  1e-3,
+    "Sy top [mm³]":  1e-3,  "Sy bot [mm³]":  1e-3,
+    "Cw [mm⁶]":      1e-6,  "J [mm⁴]":       1e-4,
+}
+
+def _aplicar_unidad(res, unidad):
+    if unidad == "cm":
+        nuevo = dict(res)
+        for key, factor in _CONV.items():
+            if key in nuevo and isinstance(nuevo[key], (int, float)):
+                nuevo[key] = round(nuevo[key] * factor, 6)
+        u = {"len": "cm", "area": "cm²", "mod": "cm³", "iner": "cm⁴", "warp": "cm⁶"}
+        return nuevo, u
+    u = {"len": "mm", "area": "mm²", "mod": "mm³", "iner": "mm⁴", "warp": "mm⁶"}
+    return res, u
+
+
+def _u_default():
+    return {"len": "mm", "area": "mm²", "mod": "mm³", "iner": "mm⁴", "warp": "mm⁶"}
 
 
 def crear_doble_omega_partes(A1, B1, e1, A2, B2, e2, degree=30.0):
     pts1, _, _ = crear_perfil_omega_puntos(A1, B1, e1, degree)
     pts2_up, _, _ = crear_perfil_omega_puntos(A2, B2, e2, degree)
-    pts2 = [(x, -y) for x, y in pts2_up]
+
+    # Alinear centros horizontales de ambos perfiles
+    xs1 = [p[0] for p in pts1]
+    cx1 = (max(xs1) + min(xs1)) / 2
+    xs2 = [p[0] for p in pts2_up]
+    cx2 = (max(xs2) + min(xs2)) / 2
+    dx = cx1 - cx2
+
+    pts2 = [(x + dx, -y) for x, y in pts2_up]
     return pts1, pts2
 
 
@@ -254,19 +295,25 @@ def calcular_doble():
         A2 = float(request.form["A2"])
         B2 = float(request.form["B2"])
         e2 = float(request.form["e2"])
+        unidad_doble = request.form.get("unidad_doble", "mm")
+        fi = 10.0 if unidad_doble == "cm" else 1.0
 
-        if any(v <= 0 for v in [A1, B1, e1, A2, B2, e2]):
+        A1m, B1m, e1m = A1*fi, B1*fi, e1*fi
+        A2m, B2m, e2m = A2*fi, B2*fi, e2*fi
+        if any(v <= 0 for v in [A1m, B1m, e1m, A2m, B2m, e2m]):
             raise ValueError("Todos los parámetros deben ser mayores que cero.")
-        if e1 >= A1:
+        if e1m >= A1m:
             raise ValueError("El espesor e1 debe ser menor que el ala A1.")
-        if e2 >= A2:
+        if e2m >= A2m:
             raise ValueError("El espesor e2 debe ser menor que el ala A2.")
 
-        resultados_doble, pts1, pts2 = calcular_propiedades_doble(A1, B1, e1, A2, B2, e2)
+        resultados_doble, pts1, pts2 = calcular_propiedades_doble(A1m, B1m, e1m, A2m, B2m, e2m)
+        resultados_doble, u_doble = _aplicar_unidad(resultados_doble, unidad_doble)
         imagen_doble = generar_imagen_doble_omega(pts1, pts2)
         return render_template("index.html",
                                resultados_doble=resultados_doble, imagen_doble=imagen_doble,
-                               A1=A1, B1=B1, e1=e1, A2=A2, B2=B2, e2=e2)
+                               A1=A1, B1=B1, e1=e1, A2=A2, B2=B2, e2=e2,
+                               unidad_doble=unidad_doble, u=_u_default(), u_doble=u_doble)
     except Exception as ex:
         return render_template("index.html", error_doble=str(ex),
                                A1=request.form.get("A1", ""),
@@ -274,7 +321,9 @@ def calcular_doble():
                                e1=request.form.get("e1", ""),
                                A2=request.form.get("A2", ""),
                                B2=request.form.get("B2", ""),
-                               e2=request.form.get("e2", ""))
+                               e2=request.form.get("e2", ""),
+                               unidad_doble=request.form.get("unidad_doble","mm"),
+                               u=_u_default(), u_doble=_u_default())
 
 
 if __name__ == "__main__":
