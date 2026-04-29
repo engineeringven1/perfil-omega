@@ -197,6 +197,8 @@
             <tr class="section-divider"><td colspan="2">Propiedades de sección</td></tr>
             <tr><td>Area</td><td>{{ resultados['Area [mm²]'] }} {{ u.area }}</td></tr>
             <tr><td>Peso</td><td>{{ resultados['Peso [N/m]'] }} N/m</td></tr>
+            <tr><td>cx (desde centro)</td><td>{{ resultados['cx [mm]'] }} {{ u.len }}</td></tr>
+            <tr><td>cy (desde centro)</td><td>{{ resultados['cy [mm]'] }} {{ u.len }}</td></tr>
             <tr><td>Ix</td><td>{{ resultados['Ix [mm⁴]'] }} {{ u.iner }}</td></tr>
             <tr><td>Sx (top)</td><td>{{ resultados['Sx top [mm³]'] }} {{ u.mod }}</td></tr>
             <tr><td>Sx (bot)</td><td>{{ resultados['Sx bot [mm³]'] }} {{ u.mod }}</td></tr>
@@ -304,6 +306,8 @@
             <tr class="section-divider"><td colspan="2">Propiedades de sección</td></tr>
             <tr><td>Area</td><td>{{ resultados_doble['Area [mm²]'] }} {{ u_doble.area }}</td></tr>
             <tr><td>Peso</td><td>{{ resultados_doble['Peso [N/m]'] }} N/m</td></tr>
+            <tr><td>cx (desde centro)</td><td>{{ resultados_doble['cx [mm]'] }} {{ u_doble.len }}</td></tr>
+            <tr><td>cy (desde centro)</td><td>{{ resultados_doble['cy [mm]'] }} {{ u_doble.len }}</td></tr>
             <tr><td>Ix</td><td>{{ resultados_doble['Ix [mm⁴]'] }} {{ u_doble.iner }}</td></tr>
             <tr><td>Sx (top)</td><td>{{ resultados_doble['Sx top [mm³]'] }} {{ u_doble.mod }}</td></tr>
             <tr><td>Sx (bot)</td><td>{{ resultados_doble['Sx bot [mm³]'] }} {{ u_doble.mod }}</td></tr>

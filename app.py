@@ -90,6 +90,12 @@ def calcular_propiedades(A_val, B_val, e_val, degree_val=30.0):
     rx, ry = section.get_rc()
     cw = section.get_gamma()
     j = section.get_j()
+    cx_abs, cy_abs = section.get_c()
+
+    # Centroide relativo al centro del bounding box del perfil
+    pts_arr = np.array(puntos, dtype=float)
+    x_mid = (pts_arr[:, 0].max() + pts_arr[:, 0].min()) / 2
+    y_mid = (pts_arr[:, 1].max() + pts_arr[:, 1].min()) / 2
 
     si_name = f"UV{int(A_val)}x{int(B_val)}x{int(A_val)}x{int(e_val)}"
     peso_n_m = round((area / 1e6) * 7850 * 9.81, 4)
@@ -104,6 +110,8 @@ def calcular_propiedades(A_val, B_val, e_val, degree_val=30.0):
         "Density [kg/m3]": 7849.049267,
         "Area [mm²]": round(area, 4),
         "Peso [N/m]": peso_n_m,
+        "cx [mm]": round(cx_abs - x_mid, 4),
+        "cy [mm]": round(cy_abs - y_mid, 4),
         "Ix [mm⁴]": round(ixx_c, 4),
         "Sx top [mm³]": round(zxx_plus, 4),
         "Sx bot [mm³]": round(zxx_minus, 4),
@@ -117,16 +125,25 @@ def calcular_propiedades(A_val, B_val, e_val, degree_val=30.0):
         "SFx": 1,
         "Cw [mm⁶]": round(cw, 4),
         "J [mm⁴]": round(j, 4),
-    }, puntos
+    }, puntos, (cx_abs, cy_abs)
 
 
-def generar_imagen_perfil(puntos):
+def _dibujar_centroide(ax, cx, cy):
+    ax.axhline(y=cy, color="#E53E3E", linewidth=0.8, linestyle="--", alpha=0.7)
+    ax.axvline(x=cx, color="#E53E3E", linewidth=0.8, linestyle="--", alpha=0.7)
+    ax.plot(cx, cy, "o", color="#E53E3E", markersize=7, zorder=5, label=f"CM ({cx:.1f}, {cy:.1f})")
+    ax.legend(fontsize=7, loc="upper right")
+
+
+def generar_imagen_perfil(puntos, centroid=None):
     fig, ax = plt.subplots(figsize=(5, 5))
     pts = list(puntos) + [puntos[0]]
     xs = [p[0] for p in pts]
     ys = [p[1] for p in pts]
     ax.fill(xs[:-1], ys[:-1], color="#4A90D9", alpha=0.4)
     ax.plot(xs, ys, color="#1A5C9E", linewidth=2)
+    if centroid:
+        _dibujar_centroide(ax, *centroid)
     ax.set_aspect("equal")
     ax.set_xlabel("x [mm]")
     ax.set_ylabel("y [mm]")
@@ -159,9 +176,9 @@ def calcular():
         if e >= A:
             raise ValueError("El espesor e debe ser menor que el ala A.")
 
-        resultados, puntos = calcular_propiedades(A, B, e)
+        resultados, puntos, centroid = calcular_propiedades(A, B, e)
         resultados, u = _aplicar_unidad(resultados, unidad)
-        imagen = generar_imagen_perfil(puntos)
+        imagen = generar_imagen_perfil(puntos, centroid)
         return render_template("index.html", resultados=resultados, imagen=imagen,
                                A=A, B=B, e=e, unidad=unidad, u=u, u_doble=_u_default())
     except Exception as ex:
@@ -178,6 +195,7 @@ _CONV = {
     "Wind Proj [mm]": 0.1,   "Perimeter [mm]": 0.1,
     "Area [mm²]":     0.01,
     "rx [mm]":        0.1,   "ry [mm]":        0.1,
+    "cx [mm]":        0.1,   "cy [mm]":        0.1,
     "Ix [mm⁴]":      1e-4,  "Iy [mm⁴]":      1e-4,
     "Sx top [mm³]":  1e-3,  "Sx bot [mm³]":  1e-3,
     "Sy top [mm³]":  1e-3,  "Sy bot [mm³]":  1e-3,
@@ -237,10 +255,13 @@ def calcular_propiedades_doble(A1_val, B1_val, e1_val, A2_val, B2_val, e2_val, d
     rx, ry = section.get_rc()
     cw = section.get_gamma()
     j = section.get_j()
+    cx_abs, cy_abs = section.get_c()
 
     all_pts = np.array(pts1 + pts2, dtype=float)
     height = round(all_pts[:, 1].max() - all_pts[:, 1].min(), 4)
     width = round(all_pts[:, 0].max() - all_pts[:, 0].min(), 4)
+    x_mid = (all_pts[:, 0].max() + all_pts[:, 0].min()) / 2
+    y_mid = (all_pts[:, 1].max() + all_pts[:, 1].min()) / 2
 
     si_name = f"DUV{int(A1_val)}x{int(B1_val)}x{int(e1_val)}-{int(A2_val)}x{int(B2_val)}x{int(e2_val)}"
     peso_n_m = round((area / 1e6) * 7849.049267 * 9.81, 4)
@@ -251,6 +272,8 @@ def calcular_propiedades_doble(A1_val, B1_val, e1_val, A2_val, B2_val, e2_val, d
         "Width [mm]": width,
         "Area [mm²]": round(area, 4),
         "Peso [N/m]": peso_n_m,
+        "cx [mm]": round(cx_abs - x_mid, 4),
+        "cy [mm]": round(cy_abs - y_mid, 4),
         "Ix [mm⁴]": round(ixx_c, 4),
         "Sx top [mm³]": round(zxx_plus, 4),
         "Sx bot [mm³]": round(zxx_minus, 4),
@@ -261,10 +284,10 @@ def calcular_propiedades_doble(A1_val, B1_val, e1_val, A2_val, B2_val, e2_val, d
         "ry [mm]": round(ry, 4),
         "Cw [mm⁶]": round(cw, 4),
         "J [mm⁴]": round(j, 4),
-    }, pts1, pts2
+    }, pts1, pts2, (cx_abs, cy_abs)
 
 
-def generar_imagen_doble_omega(pts1, pts2):
+def generar_imagen_doble_omega(pts1, pts2, centroid=None):
     fig, ax = plt.subplots(figsize=(5, 5))
     for pts in [pts1, pts2]:
         closed = list(pts) + [pts[0]]
@@ -272,7 +295,9 @@ def generar_imagen_doble_omega(pts1, pts2):
         ys = [p[1] for p in closed]
         ax.fill(xs[:-1], ys[:-1], color="#4A90D9", alpha=0.4)
         ax.plot(xs, ys, color="#1A5C9E", linewidth=2)
-    ax.axhline(y=0, color="#718096", linewidth=0.8, linestyle="--")
+    ax.axhline(y=0, color="#718096", linewidth=0.8, linestyle="--", alpha=0.5)
+    if centroid:
+        _dibujar_centroide(ax, *centroid)
     ax.set_aspect("equal")
     ax.set_xlabel("x [mm]")
     ax.set_ylabel("y [mm]")
@@ -304,9 +329,9 @@ def calcular_doble():
         if e2 >= A2:
             raise ValueError("El espesor e2 debe ser menor que el ala A2.")
 
-        resultados_doble, pts1, pts2 = calcular_propiedades_doble(A1, B1, e1, A2, B2, e2)
+        resultados_doble, pts1, pts2, centroid_d = calcular_propiedades_doble(A1, B1, e1, A2, B2, e2)
         resultados_doble, u_doble = _aplicar_unidad(resultados_doble, unidad_doble)
-        imagen_doble = generar_imagen_doble_omega(pts1, pts2)
+        imagen_doble = generar_imagen_doble_omega(pts1, pts2, centroid_d)
         return render_template("index.html",
                                resultados_doble=resultados_doble, imagen_doble=imagen_doble,
                                A1=A1, B1=B1, e1=e1, A2=A2, B2=B2, e2=e2,
